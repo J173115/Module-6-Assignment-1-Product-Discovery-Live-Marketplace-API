@@ -8,7 +8,34 @@ import {getProducts} from '../services/productApi';
 export default function MarketplaceScreen(){
  const[products,setProducts]=useState([]); const[search,setSearch]=useState(''); const[selectedCategory,setSelectedCategory]=useState('all'); const[isLoading,setIsLoading]=useState(true); const[isRefreshing,setIsRefreshing]=useState(false); const[errorMessage,setErrorMessage]=useState('');
  // TODO 5: create async loadProducts(isManualRefresh=false). Use loading/refreshing, clear error, await getProducts(), setProducts(), catch, finally.
+ async function loadProducts(isManualRefresh = false) {
+  try {
+    if (isManualRefresh) {
+      setIsRefreshing(true);
+    } else {
+      setIsLoading(true);
+    }
+
+    setErrorMessage(null);
+
+    const products = await getProducts();
+    console.log(products)
+    setProducts(products);
+  } catch (error) {
+    setErrorMessage(error.message);
+  } finally {
+    if (isManualRefresh) {
+      setIsRefreshing(false);
+    } else {
+      setIsLoading(false);
+    }
+  }
+}
  // TODO 6: useEffect(() => { loadProducts(); }, []);
+ useEffect(() => {
+  loadProducts();
+}, []);
+
  const categories=['all',...Array.from(new Set(products.map(p=>p.category))).slice(0,8)];
  const filteredProducts=products.filter(p=>p.title.toLowerCase().includes(search.trim().toLowerCase())&&(selectedCategory==='all'||p.category===selectedCategory));
  if(isLoading)return <LoadingState/>;
